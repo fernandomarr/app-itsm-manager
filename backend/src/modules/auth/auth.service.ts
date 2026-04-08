@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Inject } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
+import type { Provider } from '@supabase/auth-js';
 
 export interface SignUpDto {
   email: string;
@@ -92,9 +93,10 @@ export class AuthService {
    */
   async signInWithOAuth(provider: 'google' | 'microsoft' | 'github'): Promise<{ url: string }> {
     const { data, error } = await this.supabaseClient.auth.signInWithOAuth({
-      provider,
+      provider: provider as Provider,
       options: {
         redirectTo: this.configService.get('FRONTEND_URL') + '/auth/callback',
+        scopes: 'openid profile email',
       },
     });
 

@@ -1,12 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Logger as WinstonLogger } from 'winston';
+import { Injectable, Inject } from '@nestjs/common';
+import { Logger as WinstonToken } from 'winston';
+import type { Logger as WinstonLogger } from 'winston';
 
 @Injectable()
 export class LoggerService {
   private readonly logger: WinstonLogger;
 
-  constructor(logger: Logger) {
-    this.logger = logger as unknown as WinstonLogger;
+  constructor(@Inject(WinstonToken) logger: WinstonLogger) {
+    this.logger = logger;
   }
 
   /**

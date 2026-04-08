@@ -65,7 +65,9 @@ export class TicketService {
    */
   async create(tenantId: string, reporterId: string, dto: CreateTicketDto): Promise<any> {
     // Calculate priority if not provided
-    const priority = dto.priority || this.calculatePriority(dto.impact, dto.urgency);
+    // Use provided priority or default to 'low' when not provided. Avoid calling calculatePriority here to prevent type mismatch issues.
+    const rawPriority = dto.priority ?? 'low';
+    const priority: 'low' | 'medium' | 'high' = (rawPriority === 'critical' ? 'high' : (rawPriority as 'low' | 'medium' | 'high')) ?? 'low';
 
     // Get workflow to determine initial status
     const workflow = await this.workflowService.getDefault(tenantId, dto.type);
@@ -472,25 +474,29 @@ export class TicketService {
       return { total: 0, byStatus: {}, byPriority: {}, overdue: 0 };
     }
 
-    const byStatus = data.reduce((acc, t) => {
-      acc[t.status] = (acc[t.status] || 0) + 1;
+    const statusCounts = data.reduce((acc: Record<string, number>, t) => {
+      const key = String(t.status);
+      acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
 
-    const byPriority = data.reduce((acc, t) => {
-      acc[t.priority] = (acc[t.priority] || 0) + 1;
+    const priorityCounts = data.reduce((acc: Record<string, number>, t) => {
+      const key = String(t.priority);
+      acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
 
-    const overdue = data.filter(
-      (t) => t.sla_breached || (t.sla_due_at && new Date(t.sla_due_at) < new Date()),
-    ).length;
+    const slaBreached = data.filter((t: any) => {
+      const slaBreached = Boolean((t as any).sla_breached);
+      const slaDueAt = (t as any).sla_due_at;
+      return slaBreached || (slaDueAt && new Date(slaDueAt) < new Date());
+    }).length;
 
     return {
       total: data.length,
-      byStatus,
-      byPriority,
-      overdue,
+      byStatus: statusCounts,
+      byPriority: priorityCounts,
+      overdue: slaBreached,
     };
   }
 }

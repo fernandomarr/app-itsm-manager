@@ -60,7 +60,7 @@ export class IncidentService {
       .eq('tenant_id', tenantId)
       .eq('type', 'incident');
 
-    const byCategory = data?.reduce((acc, t) => {
+    const byCategory = data?.reduce((acc: Record<string, number>, t) => {
       acc[t.category || 'Uncategorized'] = (acc[t.category || 'Uncategorized'] || 0) + 1;
       return acc;
     }, {}) || {};

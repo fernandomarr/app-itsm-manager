@@ -73,7 +73,7 @@ export class TenantController {
     @Param('id') id: string,
     @Body() dto: { userId: string; role: string },
   ) {
-    return this.tenantService.addMember(id, dto.userId, dto.role);
+    return this.tenantService.addMember(id, dto.userId, dto.role as 'viewer' | 'member' | 'admin' | 'owner');
   }
 
   @Put(':id/members/:userId/role')
@@ -84,7 +84,7 @@ export class TenantController {
     @Param('userId') userId: string,
     @Body() dto: { role: string },
   ) {
-    return this.tenantService.updateMemberRole(id, userId, dto.role);
+    return this.tenantService.updateMemberRole(id, userId, dto.role as 'viewer' | 'member' | 'admin' | 'owner');
   }
 
   @Delete(':id/members/:userId')
