@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { WinstonLogger } from 'winston';
+import { Logger as WinstonLogger } from 'winston';
 
 @Injectable()
 export class LoggerService {
   private readonly logger: WinstonLogger;
 
   constructor(logger: Logger) {
-    this.logger = logger as WinstonLogger;
+    this.logger = logger as unknown as WinstonLogger;
   }
 
   /**

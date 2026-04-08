@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient, createClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class DatabaseService {
@@ -21,9 +21,16 @@ export class DatabaseService {
    * Use this for operations that should respect RLS
    */
   getClientWithUser(token: string): SupabaseClient {
-    return this.supabaseClient.auth.admin.getUserById(token).then(() =>
-      this.supabaseClient
-    );
+    // Set the auth token in the global headers so RLS respects the user context
+    const url = (this.supabaseClient as any).supabaseUrl as string;
+    const key = (this.supabaseClient as any).supabaseKey as string;
+    return createClient(url, key, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
   }
 
   /**

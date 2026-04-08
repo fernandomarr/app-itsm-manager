@@ -65,7 +65,7 @@ export class CacheService {
     const pattern = `tenant:${tenantId}:*`;
     const keys = await this.redisClient.keys(pattern);
     if (keys.length > 0) {
-      await this.redisClient.del(...keys);
+      await (this.redisClient as any).del(keys);
     }
   }
 }
