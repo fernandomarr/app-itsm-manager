@@ -36,6 +36,9 @@ import { IntegrationModule } from './modules/integration/integration.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { ServiceCatalogModule } from './modules/service-catalog/service-catalog.module';
 
+// Health
+import { HealthModule } from './health/health.module';
+
 @Module({
   imports: [
     // Configuration
@@ -94,6 +97,9 @@ import { ServiceCatalogModule } from './modules/service-catalog/service-catalog.
     IntegrationModule,
     NotificationModule,
     ServiceCatalogModule,
+
+    // Health
+    HealthModule,
   ],
 })
 export class AppModule {}
