@@ -6,18 +6,28 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatDate(date: string | Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(date));
+  if (!date) return '-';
+  try {
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) return '-';
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(parsedDate);
+  } catch (error) {
+    return '-';
+  }
 }
 
 export function formatRelativeTime(date: string | Date): string {
+  if (!date) return '-';
   const now = new Date();
   const past = new Date(date);
+  if (isNaN(past.getTime())) return '-';
+  
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
 
   if (diffInSeconds < 60) return 'just now';

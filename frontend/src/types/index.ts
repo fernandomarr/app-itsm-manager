@@ -241,16 +241,3 @@ export interface PaginationResponse<T> {
   limit: number;
 }
 
-// Adicione isto ao final do arquivo frontend/src/types/index.ts
-export interface TicketFilters {
-  status?: string[];
-  priority?: string[];
-  type?: string[];
-  search?: string;
-  assigneeId?: string;
-  reporterId?: string;
-  dateRange?: {
-    from: string;
-    to: string;
-  };
-}

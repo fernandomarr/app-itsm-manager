@@ -24,7 +24,7 @@ export default function SignupPage() {
 
     try {
       const response = await authApi.signUp(formData);
-      authStore.getState().setAuth(response.data.user, response.data.accessToken);
+      authStore.getState().setAuth(response.data.user, response.data.accessToken, response.data.tenantId);
       toast.success('Account created successfully!');
       router.push('/dashboard');
     } catch (error: any) {
