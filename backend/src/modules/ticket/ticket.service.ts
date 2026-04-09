@@ -73,10 +73,16 @@ export class TicketService {
     const workflow = await this.workflowService.getDefault(tenantId, dto.type);
     const initialStatus = workflow?.definition?.initialStatus || 'new';
 
+    // Generate explicit ticket number to satisfy NOT NULL constraints without database triggers
+    const prefix = dto.type.substring(0, 3).toUpperCase();
+    const uniqueNumber = Math.floor(Math.random() * 900000) + 100000;
+    const ticketNumber = `${prefix}-${uniqueNumber}`;
+
     // Insert ticket
     const { data: ticket, error } = await this.supabase
       .from('tickets')
       .insert({
+        ticket_number: ticketNumber,
         tenant_id: tenantId,
         type: dto.type,
         title: dto.title,
@@ -101,7 +107,7 @@ export class TicketService {
 
     if (error) {
       this.logger.error('Failed to create ticket', { error });
-      throw new BadRequestException('Failed to create ticket');
+      throw new BadRequestException(`Failed to create ticket: ${error.message}`);
     }
 
     // Queue SLA check
@@ -137,7 +143,6 @@ export class TicketService {
         *,
         reporter:reporter_id (id, email, full_name),
         assignee:assignee_id (id, email, full_name),
-        sla:sla_id (id, name, response_time_hours, resolution_time_hours),
         comments:ticket_comments (
           id,
           content,
@@ -145,24 +150,18 @@ export class TicketService {
           is_automated,
           created_at,
           author:author_id (id, email, full_name, avatar_url)
-        ),
-        relations:ticket_relations (
-          id,
-          relation_type,
-          target:target_ticket_id (
-            id,
-            ticket_number,
-            title,
-            status,
-            type
-          )
         )
       `)
       .eq('id', ticketId)
       .eq('tenant_id', tenantId)
       .single();
 
-    if (error || !data) {
+    if (error) {
+      this.logger.error('Failed to find ticket', { ticketId, tenantId, error });
+      throw new NotFoundException(`Ticket error: ${error.message}`);
+    }
+    
+    if (!data) {
       throw new NotFoundException('Ticket not found');
     }
 

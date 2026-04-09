@@ -21,6 +21,7 @@ export interface SignInDto {
 export interface AuthResponse {
   accessToken: string;
   refreshToken?: string;
+  tenantId?: string;
   user: {
     id: string;
     email: string;
@@ -33,7 +34,9 @@ export interface AuthResponse {
 export class AuthService {
   constructor(
     @Inject('SUPABASE_CLIENT_AUTH')
-    private readonly supabaseClient: SupabaseClient,
+    private readonly supabaseClient: SupabaseClient, // We will keep the name so auth works seamlessly
+    @Inject('SUPABASE_CLIENT')
+    private readonly adminClient: SupabaseClient, // Bypasses RLS for secure database inserts
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -60,7 +63,13 @@ export class AuthService {
       throw new UnauthorizedException('Failed to create user');
     }
 
-    // Create tenant if provided
+    // Initialize public structures securely bypassing Auth RLS
+    await this.adminClient.from('users').insert({
+      id: data.user.id,
+      email: data.user.email,
+      full_name: dto.fullName
+    });
+
     if (dto.tenantSlug) {
       await this.createTenantForUser(data.user.id, dto.tenantName || dto.fullName + "'s Team", dto.tenantSlug);
     }
@@ -141,16 +150,31 @@ export class AuthService {
     tenantName: string,
     tenantSlug: string,
   ): Promise<void> {
-    const { error } = await this.supabaseClient
+    // 1. Create the tenant
+    const { data: tenantData, error: tenantErr } = await this.adminClient
       .from('tenants')
       .insert({
         name: tenantName,
         slug: tenantSlug,
       })
+      .select('id')
       .single();
 
-    if (error) {
-      throw new ConflictException(`Failed to create tenant: ${error.message}`);
+    if (tenantErr || !tenantData) {
+      throw new ConflictException(`Failed to create tenant: ${tenantErr?.message}`);
+    }
+
+    // 2. Link user to tenant as owner
+    const { error: linkErr } = await this.adminClient
+      .from('tenant_users')
+      .insert({
+        tenant_id: tenantData.id,
+        user_id: userId,
+        role: 'owner',
+      });
+
+    if (linkErr) {
+      throw new ConflictException(`Failed to link tenant to user: ${linkErr.message}`);
     }
   }
 
@@ -158,16 +182,26 @@ export class AuthService {
    * Generate JWT response for Supabase user
    */
   private async generateAuthResponse(user: any): Promise<AuthResponse> {
+    // Look up user's default tenant
+    const { data: tenantUsers } = await this.adminClient
+      .from('tenant_users')
+      .select('tenant_id')
+      .eq('user_id', user.id)
+      .limit(1);
+
+    const tenantId = tenantUsers?.[0]?.tenant_id || user.user_metadata?.tenant_id || null;
+
     const payload = {
       sub: user.id,
       email: user.email,
-      tenant_id: user.user_metadata?.tenant_id,
+      tenant_id: tenantId,
     };
 
     const accessToken = this.jwtService.sign(payload);
 
     return {
       accessToken,
+      tenantId,
       user: {
         id: user.id,
         email: user.email,
