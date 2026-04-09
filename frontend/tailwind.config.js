@@ -14,6 +14,7 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -42,35 +43,67 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // ITSM specific colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+
+        /* ITSM Module Colors */
         incident: {
-          DEFAULT: "#ef4444",
+          DEFAULT: "#EF4444",
+          light: "#FEE2E2",
+          dark: "#7F1D1D",
           foreground: "#ffffff",
         },
         request: {
-          DEFAULT: "#3b82f6",
+          DEFAULT: "#3B82F6",
+          light: "#DBEAFE",
+          dark: "#1E3A5F",
           foreground: "#ffffff",
         },
         problem: {
-          DEFAULT: "#8b5cf6",
+          DEFAULT: "#8B5CF6",
+          light: "#EDE9FE",
+          dark: "#3B1F7A",
           foreground: "#ffffff",
         },
         change: {
-          DEFAULT: "#f59e0b",
+          DEFAULT: "#F59E0B",
+          light: "#FEF3C7",
+          dark: "#713F12",
           foreground: "#ffffff",
         },
+
+        /* Priority Colors */
         priority: {
-          critical: "#dc2626",
-          high: "#ea580c",
-          medium: "#ca8a04",
-          low: "#16a34a",
+          critical: "#DC2626",
+          high: "#EA580C",
+          medium: "#CA8A04",
+          low: "#16A34A",
         },
       },
+
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+
+      boxShadow: {
+        'soft': 'var(--shadow-sm)',
+        'elevated': 'var(--shadow-md)',
+        'float': 'var(--shadow-lg)',
+        'dramatic': 'var(--shadow-xl)',
+      },
+
       keyframes: {
         "accordion-down": {
           from: { height: 0 },

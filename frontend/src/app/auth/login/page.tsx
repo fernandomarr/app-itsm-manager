@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { authApi } from '@/lib/api';
 import { authStore } from '@/store/auth.store';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Sparkles, Mail, Lock, LogIn } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, LogIn, Headphones } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,134 +30,127 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background decorations */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-info/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: '1s' }} />
+    <div className="min-h-screen flex">
+      {/* Left — Branding Panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden items-center justify-center p-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-accent/30" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-accent/10 rounded-full blur-3xl" />
 
-      {/* Back button */}
-      <Link
-        href="/"
-        className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-300"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        <span className="text-sm">Back to home</span>
-      </Link>
-
-      <div className="w-full max-w-md animate-fade-in">
-        {/* Logo and Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-info mb-4 animate-float shadow-lg">
-            <Sparkles className="w-8 h-8 text-white" />
+        <div className="relative z-10 text-primary-foreground max-w-md">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+              <Headphones className="h-7 w-7" />
+            </div>
+            <span className="font-bold text-2xl">HelpOps</span>
           </div>
-          <h1 className="text-3xl font-bold mb-2">
-            <span className="gradient-text">Welcome back</span>
-          </h1>
-          <p className="text-muted-foreground">
-            Sign in to continue to your ITSM account
+          <h2 className="text-3xl font-bold mb-4 leading-tight">
+            IT Service Management made simple
+          </h2>
+          <p className="text-lg opacity-80 leading-relaxed">
+            Manage incidents, requests, problems, and changes in one intuitive platform built for modern teams.
           </p>
-        </div>
 
-        {/* Form Card */}
-        <div className="card-glow p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="label flex items-center gap-2">
-                <Mail className="w-4 h-4 text-muted-foreground" />
-                Email
-              </label>
+          <div className="mt-12 space-y-4">
+            {['Real-time dashboards & SLA tracking', 'ITIL-aligned workflows', 'Multi-tenant architecture'].map((item) => (
+              <div key={item} className="flex items-center gap-3">
+                <div className="h-6 w-6 rounded-full bg-white/20 flex items-center justify-center">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <span className="text-sm opacity-90">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Right — Form */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-background">
+        <Link
+          href="/"
+          className="absolute top-6 left-6 lg:left-auto lg:right-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm">Back</span>
+        </Link>
+
+        <div className="w-full max-w-sm animate-fade-in">
+          {/* Mobile logo */}
+          <div className="lg:hidden text-center mb-8">
+            <div className="inline-flex items-center gap-2.5">
+              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+                <Headphones className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="font-bold text-xl">Help<span className="text-primary">Ops</span></span>
+            </div>
+          </div>
+
+          <h1 className="text-2xl font-bold mb-1">Welcome back</h1>
+          <p className="text-muted-foreground mb-8">Sign in to your account</p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="label text-sm">Email</label>
               <div className="relative">
-                <Input
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="you@example.com"
+                  placeholder="you@company.com"
                   required
-                  icon={<Mail className="w-4 h-4" />}
+                  className="input pl-10"
                 />
               </div>
             </div>
 
-            {/* Password */}
-            <div className="space-y-2">
-              <label className="label flex items-center gap-2">
-                <Lock className="w-4 h-4 text-muted-foreground" />
-                Password
-              </label>
+            <div className="space-y-1.5">
+              <label className="label text-sm">Password</label>
               <div className="relative">
-                <Input
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   placeholder="••••••••"
                   required
-                  icon={<Lock className="w-4 h-4" />}
+                  className="input pl-10"
                 />
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-primary mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-primary justify-center py-2.5 mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span className="flex items-center justify-center gap-2">
-                {isLoading ? (
-                  <svg key="spinner" className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                ) : (
-                  <LogIn key="login-icon" className="w-5 h-5" />
-                )}
-                <span key="text">{isLoading ? 'Signing in...' : 'Sign In'}</span>
-              </span>
+                  Signing in...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Sign In
+                </span>
+              )}
             </button>
           </form>
 
-          {/* Sign Up Link */}
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center text-sm">
             <span className="text-muted-foreground">Don&apos;t have an account? </span>
-            <Link href="/auth/signup" className="text-primary hover:text-primary/80 font-medium transition-colors">
+            <Link href="/auth/signup" className="text-primary hover:underline font-medium">
               Sign up
             </Link>
           </div>
         </div>
-
-        {/* Footer links */}
-        <div className="mt-6 flex items-center justify-center gap-4 text-sm text-muted-foreground">
-          <Link href="/forgot-password" className="hover:text-foreground transition-colors">
-            Forgot password?
-          </Link>
-          <span>•</span>
-          <Link href="/help" className="hover:text-foreground transition-colors">
-            Need help?
-          </Link>
-        </div>
       </div>
-    </div>
-  );
-}
-
-// Input component with icon
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  icon?: React.ReactNode;
-}
-
-function Input({ icon, className, ...props }: InputProps) {
-  return (
-    <div className="relative">
-      {icon && (
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
-          {icon}
-        </div>
-      )}
-      <input
-        className={`input ${icon ? 'pl-11' : ''} ${className || ''}`}
-        {...props}
-      />
     </div>
   );
 }

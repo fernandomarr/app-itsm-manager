@@ -6,18 +6,23 @@ import { Header } from '@/components/common/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common/Card';
 import { TicketList } from '@/components/tickets/TicketList';
 import { CreateTicketDialog } from '@/components/tickets/CreateTicketDialog';
-import { ticketsApi, incidentsApi, requestsApi } from '@/lib/api';
+import { ticketsApi } from '@/lib/api';
 import { Ticket, TicketStats } from '@/types';
-import { AlertCircle, ClipboardList, GitBranch, Settings, TrendingUp, Clock, CheckCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  ClipboardList,
+  GitBranch,
+  Settings,
+  TrendingUp,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  ArrowUpRight,
+  ArrowDownRight,
+  Plus,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
-
-const statCards = [
-  { name: 'Open Tickets', icon: TrendingUp, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { name: 'Overdue', icon: Clock, color: 'text-red-500', bg: 'bg-red-500/10' },
-  { name: 'Resolved Today', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-500/10' },
-  { name: 'Pending Approval', icon: Settings, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-];
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<TicketStats | null>(null);
@@ -54,115 +59,210 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+      <div>
+        <Header title="Dashboard" />
+        <div className="p-6 space-y-6">
+          {/* Skeleton KPIs */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card p-5">
+                <div className="skeleton h-4 w-20 mb-3" />
+                <div className="skeleton h-8 w-16 mb-2" />
+                <div className="skeleton h-3 w-24" />
+              </div>
+            ))}
+          </div>
+          {/* Skeleton modules */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card p-4">
+                <div className="flex items-center gap-3">
+                  <div className="skeleton h-10 w-10 rounded-lg" />
+                  <div>
+                    <div className="skeleton h-3 w-16 mb-2" />
+                    <div className="skeleton h-5 w-12" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Skeleton table */}
+          <div className="card p-6">
+            <div className="skeleton h-5 w-32 mb-6" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="skeleton h-16 w-full" />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
+  const kpis = [
+    {
+      name: 'Open Tickets',
+      value: stats?.total || 0,
+      icon: TrendingUp,
+      color: 'text-primary',
+      bg: 'bg-primary/10',
+      trend: '+12%',
+      trendUp: true,
+    },
+    {
+      name: 'Overdue',
+      value: stats?.overdue || 0,
+      icon: Clock,
+      color: 'text-destructive',
+      bg: 'bg-destructive/10',
+      trend: '-5%',
+      trendUp: false,
+    },
+    {
+      name: 'Resolved Today',
+      value: stats?.byStatus?.resolved || 0,
+      icon: CheckCircle,
+      color: 'text-success',
+      bg: 'bg-success/10',
+      trend: '+23%',
+      trendUp: true,
+    },
+    {
+      name: 'In Progress',
+      value: stats?.byStatus?.in_progress || 0,
+      icon: AlertTriangle,
+      color: 'text-warning',
+      bg: 'bg-warning/10',
+      trend: '+8%',
+      trendUp: true,
+    },
+  ];
+
   return (
     <div>
       <Header
         title="Dashboard"
+        subtitle="Overview of your IT service operations"
         onCreate={() => setShowCreateDialog(true)}
+        createLabel="New Ticket"
       />
 
       <div className="p-6 space-y-6">
-        {/* Stats Grid */}
+        {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {statCards.map((stat) => (
-            <Card key={stat.name}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
+          {kpis.map((kpi, i) => {
+            const Icon = kpi.icon;
+            return (
+              <div key={kpi.name} className={`card p-5 animate-fade-in stagger-${i + 1}`}>
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">{stat.name}</p>
-                    <p className="text-2xl font-bold mt-1">
-                      {stat.name === 'Open Tickets' ? stats?.total || 0 :
-                       stat.name === 'Overdue' ? stats?.overdue || 0 : '0'}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{kpi.name}</p>
+                    <p className="text-3xl font-bold mt-1 tracking-tight">{kpi.value}</p>
+                    <div className={cn(
+                      'metric-trend mt-2',
+                      kpi.trendUp ? 'metric-trend-up' : 'metric-trend-down'
+                    )}>
+                      {kpi.trendUp ? (
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      ) : (
+                        <ArrowDownRight className="h-3.5 w-3.5" />
+                      )}
+                      {kpi.trend} vs last week
+                    </div>
                   </div>
-                  <div className={cn('h-12 w-12 rounded-full flex items-center justify-center', stat.bg)}>
-                    <stat.icon className={cn('h-6 w-6', stat.color)} />
+                  <div className={cn('h-11 w-11 rounded-xl flex items-center justify-center', kpi.bg)}>
+                    <Icon className={cn('h-5 w-5', kpi.color)} />
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
-        {/* Type Stats */}
+        {/* Module Quick Access */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link href="/dashboard/incidents">
-            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="h-10 w-10 rounded-lg bg-incident/10 flex items-center justify-center">
-                  <AlertCircle className="h-6 w-6 text-incident" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Incidents</p>
-                  <p className="text-lg font-semibold">
-                    {stats?.byStatus?.new || 0} open
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="card-hover p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-lg bg-incident/10 flex items-center justify-center">
+                <AlertCircle className="h-5 w-5 text-incident" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Incidents</p>
+                <p className="text-lg font-semibold">{stats?.byStatus?.new || 0} open</p>
+              </div>
+            </div>
           </Link>
 
           <Link href="/dashboard/requests">
-            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="h-10 w-10 rounded-lg bg-request/10 flex items-center justify-center">
-                  <ClipboardList className="h-6 w-6 text-request" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Requests</p>
-                  <p className="text-lg font-semibold">
-                    {stats?.byPriority?.low || 0} pending
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="card-hover p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-lg bg-request/10 flex items-center justify-center">
+                <ClipboardList className="h-5 w-5 text-request" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Requests</p>
+                <p className="text-lg font-semibold">{stats?.byPriority?.low || 0} pending</p>
+              </div>
+            </div>
           </Link>
 
           <Link href="/dashboard/problems">
-            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="h-10 w-10 rounded-lg bg-problem/10 flex items-center justify-center">
-                  <GitBranch className="h-6 w-6 text-problem" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Problems</p>
-                  <p className="text-lg font-semibold">Active</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="card-hover p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-lg bg-problem/10 flex items-center justify-center">
+                <GitBranch className="h-5 w-5 text-problem" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Problems</p>
+                <p className="text-lg font-semibold">Active</p>
+              </div>
+            </div>
           </Link>
 
           <Link href="/dashboard/changes">
-            <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="h-10 w-10 rounded-lg bg-change/10 flex items-center justify-center">
-                  <Settings className="h-6 w-6 text-change" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Changes</p>
-                  <p className="text-lg font-semibold">Scheduled</p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="card-hover p-4 flex items-center gap-4">
+              <div className="h-10 w-10 rounded-lg bg-change/10 flex items-center justify-center">
+                <Settings className="h-5 w-5 text-change" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Changes</p>
+                <p className="text-lg font-semibold">Scheduled</p>
+              </div>
+            </div>
           </Link>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'New Incident', icon: AlertCircle, color: 'text-incident hover:bg-incident/10' },
+            { label: 'New Request', icon: ClipboardList, color: 'text-request hover:bg-request/10' },
+            { label: 'New Problem', icon: GitBranch, color: 'text-problem hover:bg-problem/10' },
+            { label: 'New Change', icon: Settings, color: 'text-change hover:bg-change/10' },
+          ].map((action) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={action.label}
+                onClick={() => setShowCreateDialog(true)}
+                className={cn(
+                  'flex items-center gap-2 px-4 py-2.5 rounded-lg border border-border text-sm font-medium transition-all',
+                  action.color
+                )}
+              >
+                <Plus className="h-4 w-4" />
+                {action.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Recent Tickets */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Recent Tickets</CardTitle>
-              <Link href="/dashboard/tickets" className="text-sm text-primary hover:underline">
-                View all
+              <CardTitle className="text-lg">Recent Tickets</CardTitle>
+              <Link href="/dashboard/tickets" className="text-sm text-primary hover:underline font-medium">
+                View all →
               </Link>
             </div>
           </CardHeader>

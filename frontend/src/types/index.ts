@@ -242,17 +242,12 @@ export interface PaginationResponse<T> {
 }
 
 export interface TicketFilters {
-  type?: TicketType | string;
-  status?: TicketStatus[] | string;
-  priority?: TicketPriority[] | string;
-  assigneeId?: string;
-  reporterId?: string;
-  categoryId?: string;
-  search?: string;
-  tags?: string[];
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  type?: string;
+  status?: string;
+  priority?: string;
+  assignee?: string;
   page?: number;
   limit?: number;
+  search?: string;
 }
 

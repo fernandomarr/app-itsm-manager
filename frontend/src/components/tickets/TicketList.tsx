@@ -2,10 +2,10 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Ticket, TicketType, TicketPriority } from '@/types';
+import { Ticket, TicketType } from '@/types';
 import { Badge } from '@/components/common/Badge';
-import { cn, getTicketTypeColor, getTicketStatusColor, getPriorityBadgeColor, formatDate } from '@/lib/utils';
-import { MessageSquare, AlertCircle, ClipboardList, GitBranch, Settings } from 'lucide-react';
+import { cn, getTicketTypeColor, getTicketStatusColor, getPriorityBadgeColor, formatDate, formatRelativeTime } from '@/lib/utils';
+import { MessageSquare, AlertCircle, ClipboardList, GitBranch, Settings, ChevronRight } from 'lucide-react';
 
 interface TicketListProps {
   tickets: Ticket[];
@@ -13,10 +13,10 @@ interface TicketListProps {
 }
 
 const typeIcons: Record<TicketType, React.ReactNode> = {
-  incident: <AlertCircle className="h-4 w-4" />,
-  request: <ClipboardList className="h-4 w-4" />,
-  problem: <GitBranch className="h-4 w-4" />,
-  change: <Settings className="h-4 w-4" />,
+  incident: <AlertCircle className="h-3.5 w-3.5" />,
+  request: <ClipboardList className="h-3.5 w-3.5" />,
+  problem: <GitBranch className="h-3.5 w-3.5" />,
+  change: <Settings className="h-3.5 w-3.5" />,
 };
 
 const typeLabels: Record<TicketType, string> = {
@@ -26,62 +26,89 @@ const typeLabels: Record<TicketType, string> = {
   change: 'Change',
 };
 
+const typeColorMap: Record<TicketType, string> = {
+  incident: 'bg-incident/10 text-incident border-incident/20',
+  request: 'bg-request/10 text-request border-request/20',
+  problem: 'bg-problem/10 text-problem border-problem/20',
+  change: 'bg-change/10 text-change border-change/20',
+};
+
 export function TicketList({ tickets, selectedType }: TicketListProps) {
   if (tickets.length === 0) {
     return (
-      <div className="text-center py-12">
-        <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground opacity-50" />
-        <h3 className="mt-4 text-lg font-semibold">No tickets found</h3>
-        <p className="text-muted-foreground">Create a new ticket to get started</p>
+      <div className="text-center py-16">
+        <div className="h-14 w-14 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
+          <MessageSquare className="h-7 w-7 text-muted-foreground" />
+        </div>
+        <h3 className="font-semibold text-lg mb-1">No tickets yet</h3>
+        <p className="text-sm text-muted-foreground">Create your first ticket to get started</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
-      {tickets.map((ticket) => (
+    <div className="divide-y divide-border">
+      {tickets.map((ticket, i) => (
         <Link
           key={ticket.id}
           href={`/dashboard/tickets/${ticket.id}`}
           className={cn(
-            'block p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors',
-            selectedType && ticket.type !== selectedType && 'opacity-60'
+            'flex items-center gap-4 px-4 py-3.5 hover:bg-muted/50 transition-colors group',
+            selectedType && ticket.type !== selectedType && 'opacity-50'
           )}
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium', getTicketTypeColor(ticket.type))}>
-                  {typeIcons[ticket.type]}
-                  {typeLabels[ticket.type]}
-                </span>
-                <span className="text-xs text-muted-foreground">{ticket.ticketNumber}</span>
-                <Badge className={getPriorityBadgeColor(ticket.priority)}>
-                  {ticket.priority}
-                </Badge>
-              </div>
-              <h3 className="font-semibold truncate">{ticket.title}</h3>
-              <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                {ticket.description}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-2 min-w-fit">
-              <Badge className={getTicketStatusColor(ticket.status)}>
-                {ticket.status.replace('_', ' ')}
+          {/* Type indicator */}
+          <div className={cn(
+            'h-9 w-9 rounded-lg flex items-center justify-center shrink-0',
+            ticket.type === 'incident' && 'bg-incident/10',
+            ticket.type === 'request' && 'bg-request/10',
+            ticket.type === 'problem' && 'bg-problem/10',
+            ticket.type === 'change' && 'bg-change/10',
+          )}>
+            <span className={cn(
+              ticket.type === 'incident' && 'text-incident',
+              ticket.type === 'request' && 'text-request',
+              ticket.type === 'problem' && 'text-problem',
+              ticket.type === 'change' && 'text-change',
+            )}>
+              {typeIcons[ticket.type]}
+            </span>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-xs text-muted-foreground font-mono">
+                {ticket.ticket_number || ticket.ticketNumber || '—'}
+              </span>
+              <Badge className={cn('text-[10px] px-1.5 py-0 h-4', typeColorMap[ticket.type])}>
+                {typeLabels[ticket.type]}
               </Badge>
-              <div className="text-xs text-muted-foreground">
-                {formatDate(ticket.openedAt)}
-              </div>
-              {ticket.assignee && (
-                <div className="flex items-center gap-1 text-xs">
-                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-xs font-medium">
-                      {ticket.assignee.fullName.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
+            <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">
+              {ticket.title}
+            </h3>
+          </div>
+
+          {/* Meta */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Badge className={cn('text-[10px]', getPriorityBadgeColor(ticket.priority))}>
+              {ticket.priority}
+            </Badge>
+            <Badge className={cn('text-[10px]', getTicketStatusColor(ticket.status))}>
+              {(ticket.status || '').replace('_', ' ')}
+            </Badge>
+            <span className="text-xs text-muted-foreground w-16 text-right hidden sm:block">
+              {formatRelativeTime(ticket.created_at || ticket.createdAt || ticket.openedAt)}
+            </span>
+            {ticket.assignee && (
+              <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center" title={ticket.assignee.fullName || ticket.assignee.full_name}>
+                <span className="text-[10px] font-bold text-primary">
+                  {(ticket.assignee.fullName || ticket.assignee.full_name || '?').charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </Link>
       ))}
