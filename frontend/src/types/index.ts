@@ -241,3 +241,18 @@ export interface PaginationResponse<T> {
   limit: number;
 }
 
+export interface TicketFilters {
+  type?: TicketType | string;
+  status?: TicketStatus[] | string;
+  priority?: TicketPriority[] | string;
+  assigneeId?: string;
+  reporterId?: string;
+  categoryId?: string;
+  search?: string;
+  tags?: string[];
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
